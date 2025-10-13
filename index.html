@@ -710,4 +710,196 @@
             const getLevel = (score, low, medium) => {
                 if (score > medium) return 'Высокий';
                 if (score >= low) return 'Средний';
-                return
+                return 'Низкий';
+            };
+
+            const eiLevel = getLevel(EI, 17, 26);
+            const dpLevel = getLevel(DP, 6, 9);
+            const rpdLevel = getLevel(RPD, 32, 39); // инвертировано
+
+            let resultHTML = `
+                <p>Спасибо за честность. Вот что показывают результаты:</p>
+                <div class="result-card">
+                    <div class="level-${eiLevel === 'Высокий' ? 'high' : eiLevel === 'Средний' ? 'medium' : 'low'}">
+                        🔥 <strong>Эмоциональное истощение: ${eiLevel} уровень.</strong>
+                    </div>
+                    <div class="level-${dpLevel === 'Высокий' ? 'high' : dpLevel === 'Средний' ? 'medium' : 'low'}">
+                        👤 <strong>Деперсонализация (цинизм): ${dpLevel} уровень.</strong>
+                    </div>
+                    <div class="level-${rpdLevel === 'Высокий' ? 'high' : rpdLevel === 'Средний' ? 'medium' : 'low'}">
+                        📉 <strong>Ощущение своей неэффективности: ${rpdLevel} уровень.</strong>
+                    </div>
+                </div>
+                <p><strong>Что это значит?</strong><br>Твои результаты отражают текущее состояние. Это не приговор, а точка отсчёта.</p>
+                <p><strong>Что делать?</strong><br>Сейчас самое важное — не требовать от себя подвигов, а дать себе право на отдых и восстановление.<br>📖 Обратись к главам 1 ("Когда ничего не хочется") и 7 ("6 уровней выгорания").<br>🛠️ Начни с самой мягкой и бережной практики — «Поле любви».</p>
+            `;
+
+            document.getElementById('burnout-result-content').innerHTML = resultHTML;
+            showScreen('burnout-result');
+        }
+
+        // ===== ПРАКТИКИ =====
+        function startPractice(practiceType) {
+            switch(practiceType) {
+                case 'love-field':
+                    showScreen('practice-love-field');
+                    break;
+                case 'transfiguration':
+                    showScreen('practice-transfiguration');
+                    break;
+                case 'agreement':
+                    showScreen('practice-agreement');
+                    break;
+            }
+        }
+
+        function playAudio() {
+            document.getElementById('audio-player').style.display = 'block';
+        }
+
+        function showTextVersion() {
+            document.getElementById('text-version').style.display = 'block';
+        }
+
+        // Преображение
+        const transfigurationSteps = [
+            "Сядь удобно, закрой глаза, сделай несколько глубоких вдохов. Войди в состояние Поля Любви. Когда будешь готов(а), напиши 'готов'.",
+            "Теперь сосредоточься на чувстве, с которым хочешь поработать. Что это? Обида, гнев, тревога? Назови его одним словом.",
+            "Хорошо. Теперь найди это чувство в своём теле. Где оно живёт? В груди, в животе, в горле? Опиши его.",
+            "Теперь мысленно обратись к этому образу. Скажи ему: 'Я тебя вижу'. Почувствуй это. А теперь спроси его: 'Для чего ты здесь? От чего ты меня защищаешь?'. Напиши ответ, который придет.",
+            "Поблагодари это чувство за службу и защиту. Предложи ему новую роль — быть источником силы. Что изменилось?",
+            "Медленно возвращайся. Когда откроешь глаза, напиши, как ты себя чувствуешь сейчас."
+        ];
+
+        function startTransfigurationSteps() {
+            appData.currentTransfigurationStep = 0;
+            showTransfigurationStep();
+        }
+
+        function showTransfigurationStep() {
+            const content = document.getElementById('transfiguration-content');
+            if (appData.currentTransfigurationStep < transfigurationSteps.length) {
+                content.innerHTML = `
+                    <div class="practice-step">
+                        <p><strong>Шаг ${appData.currentTransfigurationStep + 1}:</strong> ${transfigurationSteps[appData.currentTransfigurationStep]}</p>
+                        <textarea class="journal-entry" id="transfiguration-answer" placeholder="Ваш ответ..."></textarea>
+                        <button class="btn" onclick="nextTransfigurationStep()">${appData.currentTransfigurationStep === transfigurationSteps.length - 1 ? 'Завершить' : 'Далее'}</button>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h3>🎉 Практика завершена!</h3>
+                        <p>Благодарим вас за глубокую работу.</p>
+                        <button class="btn" onclick="completePractice('transfiguration')">✅ Сохранить и вернуться</button>
+                    </div>
+                `;
+            }
+        }
+
+        function nextTransfigurationStep() {
+            const answer = document.getElementById('transfiguration-answer').value.trim();
+            if (!answer) {
+                alert('Пожалуйста, запишите ваш ответ.');
+                return;
+            }
+            appData.currentTransfigurationStep++;
+            showTransfigurationStep();
+        }
+
+        // Соглашение с собой
+        const agreementSteps = [
+            "Какое одно главное качество ты хочешь развить в себе в ближайшие 3 месяца? (например: стойкость, честность, дисциплина)",
+            "Напиши 3 ключевых принципа, которые помогут тебе развить это качество. (например: 'Мое слово безупречно', 'Я несу ответственность за свои реакции')",
+            "Какие 1-2 регулярных действия ты будешь совершать, чтобы укрепить эти принципы? (например: 'Ежедневная прогулка', 'Вести дневник 3 раза в неделю')",
+            "От какой одной разрушающей привычки ты готов отказаться на это время? (например: 'От самокритики перед сном', 'От пустых обещаний')"
+        ];
+
+        function startAgreementSteps() {
+            appData.agreementData = {};
+            appData.currentAgreementStep = 0;
+            showAgreementStep();
+        }
+
+        function showAgreementStep() {
+            const content = document.getElementById('agreement-content');
+            if (appData.currentAgreementStep < agreementSteps.length) {
+                content.innerHTML = `
+                    <div class="practice-step">
+                        <p><strong>Шаг ${appData.currentAgreementStep + 1}:</strong> ${agreementSteps[appData.currentAgreementStep]}</p>
+                        <textarea class="journal-entry" id="agreement-answer" placeholder="Ваш ответ..."></textarea>
+                        <button class="btn" onclick="nextAgreementStep()">Далее</button>
+                    </div>
+                `;
+            } else {
+                generateAgreementDocument();
+            }
+        }
+
+        function nextAgreementStep() {
+            const answer = document.getElementById('agreement-answer').value.trim();
+            if (!answer) {
+                alert('Пожалуйста, запишите ваш ответ.');
+                return;
+            }
+            appData.agreementData[`step${appData.currentAgreementStep + 1}`] = answer;
+            appData.currentAgreementStep++;
+            showAgreementStep();
+        }
+
+        function generateAgreementDocument() {
+            const today = new Date();
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 3);
+            
+            const formatDate = (date) => {
+                return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            };
+
+            const agreementHTML = `
+                <div class="card" style="margin-top: 20px;">
+                    <h3>📜 МОЕ СОГЛАШЕНИЕ С СОБОЙ</h3>
+                    <p><strong>Срок действия:</strong> ${formatDate(today)} - ${formatDate(endDate)}</p>
+                    <p><strong>Ключевое качество:</strong><br>${appData.agreementData.step1}</p>
+                    <p><strong>Мои принципы:</strong><br>${appData.agreementData.step2}</p>
+                    <p><strong>Мои поддерживающие практики:</strong><br>${appData.agreementData.step3}</p>
+                    <p><strong>От чего я отказываюсь:</strong><br>${appData.agreementData.step4}</p>
+                    <p>Я, ${tg.initDataUnsafe?.user?.first_name || 'Пользователь'}, заключаю это соглашение с собой и делаю это исходя из своих потребностей и интересов.</p>
+                    <button class="btn" onclick="completePractice('agreement')">✅ Готово. Вернуться к практикам</button>
+                </div>
+            `;
+            document.getElementById('agreement-content').innerHTML = agreementHTML;
+        }
+
+        // Завершение практики
+        function completePractice(practiceType) {
+            const payload = {
+                action: 'practice_completed',
+                practice: practiceType,
+                timestamp: Date.now()
+            };
+            tg.sendData(JSON.stringify(payload));
+            showScreen('practices-menu');
+        }
+
+        // ===== ДНЕВНИК =====
+        function giveJournalQuestion() {
+            const question = journalQuestions[Math.floor(Math.random() * journalQuestions.length)];
+            const el = document.getElementById('journal-question');
+            el.textContent = question;
+            el.style.display = 'block';
+        }
+
+        function setupReminders() {
+            alert('Функция настройки напоминаний будет доступна в боте. Нажмите "Назад", чтобы продолжить.');
+        }
+
+        // ===== ПОДДЕРЖКА =====
+        function reportBug() {
+            tg.sendData(JSON.stringify({ action: 'report_bug' }));
+            alert('Сообщение о проблеме отправлено команде поддержки. Спасибо!');
+            showScreen('onboarding-screen');
+        }
+    </script>
+</body>
+</html>
