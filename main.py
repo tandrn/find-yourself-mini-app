@@ -9,9 +9,10 @@ from aiogram.types import (
     MenuButtonWebApp
 )
 from aiogram.filters import Command
+
 BOT_TOKEN = "7759070238:AAHyBInKYBJwvVznTQzfveJyock7XsJpSlA"
-MINI_APP_URL = os.getenv(
-    "MINI_APP_URL", "https://tandrn.github.io/find-yourself-mini-app/")
+MINI_APP_URL = "https://tandrn.github.io/find-yourself-mini-app/"
+
 
 # main.py — в самом начале, до создания бота
 import os
@@ -185,4 +186,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
