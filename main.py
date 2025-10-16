@@ -1,208 +1,184 @@
-# main.py
 import asyncio
 import logging
-import os
 from aiogram import Bot, Dispatcher, Router, types
-from aiogram.filters import Command
 from aiogram.types import (
     Message,
     WebAppInfo,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    MenuButtonWebApp,
+    MenuButtonWebApp
 )
+from aiogram.filters import Command
+from config import BOT_TOKEN, MINI_APP_URL
+# main.py — в самом начале, до создания бота
+import os
 
-# -------------------------
-# Config: try config.py then env
-# -------------------------
-try:
-    from config import BOT_TOKEN, MINI_APP_URL
-except Exception:
-    BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-    MINI_APP_URL = os.getenv("MINI_APP_URL", "https://yourdomain.com/web/")
+print("🔍 Все переменные окружения (частично):")
+for key in os.environ.keys():
+    if "BOT" in key or "TOKEN" in key or "APP" in key:
+        print(f"  {key} = {os.environ[key][:20]}...")  # первые 20 символов
 
-if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN is missing — set it in config.py or env variable BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+print(f"🎯 BOT_TOKEN = {repr(BOT_TOKEN)}")  # покажет None, если нет
 
-# -------------------------
-# Logging
-# -------------------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
 
-# -------------------------
-# Init bot
-# -------------------------
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+# Инициализация
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 router = Router()
 
-# -------------------------
-# Menu button (WebApp)
-# -------------------------
+# Главное меню с WebApp (опционально)
+
+
 async def set_webapp_menu(bot: Bot):
-    try:
-        await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(text="Мастерская", web_app=WebAppInfo(url=MINI_APP_URL))
-        )
-        logging.info("WebApp menu set.")
-    except Exception as e:
-        logging.warning(f"Couldn't set webapp menu: {e}")
+    await bot.set_chat_menu_button(
+        menu_button=MenuButtonWebApp(
+            text="Мастерская", web_app=WebAppInfo(url=MINI_APP_URL))
+    )
+
+# Клавиатура для приветствия
 
 
-# -------------------------
-# Keyboards
-# -------------------------
 def get_start_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="▶️ Начать путь", web_app=WebAppInfo(url=MINI_APP_URL))],
-        [InlineKeyboardButton(text="🔍 Что я умею", callback_data="about_features")],
+        [InlineKeyboardButton(text="▶️ Начать путь",
+                              web_app=WebAppInfo(url=MINI_APP_URL))],
+        [InlineKeyboardButton(text="🔍 Что я умею",
+                              callback_data="about_features")],
         [InlineKeyboardButton(text="📖 О книге", callback_data="about_book")],
-        [InlineKeyboardButton(text="🛠 Поддержка", callback_data="support")],
+        [InlineKeyboardButton(text="🛠 Поддержка", callback_data="support")]
     ])
+
+# Клавиатура "в начало"
 
 
 def get_back_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="◀️ В начало", callback_data="back_to_start")]
+        [InlineKeyboardButton(text="◀️ В начало",
+                              callback_data="back_to_start")]
     ])
 
 
-# -------------------------
-# /start handler
-# -------------------------
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     welcome_text = (
-        "👋 Привет.\n\n"
+        "👋 Привет.\n"
         "Ты не один. И ты не сломался.\n"
-        "Это просто переход — и он имеет смысл.\n\n"
-        "Я — твой цифровой проводник по книге «Найти себя».\n"
+        "Это просто переход — и он имеет смысл.\n"
+        "Я — твой цифровой проводник по книге \"Найти себя\".\n"
         "Всё здесь бесплатно. Просто будь с собой честен."
     )
     await message.answer(welcome_text, reply_markup=get_start_keyboard())
 
+# Обработка callback-кнопок
 
-# -------------------------
-# Callback handler
-# -------------------------
+
 @router.callback_query()
 async def handle_callbacks(callback: types.CallbackQuery):
-    data = callback.data or ""
-    if data == "about_features":
+    if callback.data == "about_features":
         text = (
-            "Я здесь, чтобы поддержать тебя:\n\n"
-            "• 📍 Диагностика «6 уровней» — быстрое самощупие\n"
-            "• 🔥 Тест на выгорание (Maslach) — оценка трёх шкал\n"
-            "• 🌿 Практики: «Поле любви», «Преображение», «Соглашение с собой»\n"
-            "• 📝 Дневник и шаблоны\n"
-            "• 📬 Мягкие напоминания (опционально)"
+            "Я здесь, чтобы быть твоей опорой на этом пути. Вот что мы можем делать вместе:\n\n"
+            "📍 Понять, где ты сейчас: Проведем честную диагностику твоего состояния без сложных терминов.\n"
+            "🧭 Найти ориентиры: Покажу, на каком из 6 уровней книги у тебя больше всего напряжения, а где — твоя сила.\n"
+            "🛠️ Дать инструменты: Проведу тебя по ключевым практикам из книги — «Поле любви», «Преображение» и другим.\n"
+            "📝 Поддержать в самопознании: Помогу вести дневник и буду задавать вопросы, которые ведут вглубь.\n"
+            "📬 Мягко напомнить о себе: Если ты пропадешь, я тихонько постучусь, чтобы спросить, как ты."
         )
         await callback.message.edit_text(text, reply_markup=get_back_keyboard())
 
-    elif data == "about_book":
+    elif callback.data == "about_book":
         text = (
-            "📖 «Найти себя» — практическая карта восстановления: "
-            "от понимания симптомов к деликатным и работающим практикам.\n\n"
-            "Если хотите — можно перейти в мини-приложение."
+            "Книга \"Найти себя\" — это не сборник советов, а живая карта внутреннего путешествия от выгорания к целостности.\n\n"
+            "Она для тех, кто оказался в точке жизненного кризиса: когда привычные цели больше не вдохновляют, работа не приносит радости, а на вопрос \"Чего я хочу?\" ответа нет.\n\n"
+            "Если у тебя ее еще нет, она может стать твоим настольным компасом."
         )
+        # Добавь обложку, если есть
         await callback.message.edit_text(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🛒 Купить (Ozon)", url="https://ozon.ru/t/HU6kW2c")],
-            [InlineKeyboardButton(text="🚀 Перейти в Мастерскую", web_app=WebAppInfo(url=MINI_APP_URL))],
-            [InlineKeyboardButton(text="◀️ В начало", callback_data="back_to_start")]
+            [InlineKeyboardButton(text="🛒 Купить на Ozon",
+                                  url="https://ozon.ru/t/HU6kW2c")],
+            [InlineKeyboardButton(text="🚀 Поехали далее",
+                                  web_app=WebAppInfo(url=MINI_APP_URL))],
+            [InlineKeyboardButton(text="◀️ В начало",
+                                  callback_data="back_to_start")]
         ]))
 
-    elif data == "support":
+    elif callback.data == "support":
         text = (
-            "Нужна помощь?\n\n"
-            "• Техническая: сообщить проблему\n"
-            "• Консультация: автор — Артём Графов\n"
-            "• Тренинги: канал в Telegram"
+            "Иногда в пути нужна помощь.\n\n"
+            "Техническая проблема с ботом? Нажми кнопку ниже, и твой вопрос улетит нашей команде.\n\n"
+            "Чувствуешь, что нужна личная работа и глубокое погружение? Автор книги, Артём Графов, проводит личные консультации.\n\n"
+            "Если интересно узнать о групповых тренингах - смотри информацию по кнопке"
         )
         await callback.message.edit_text(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🤖 Сообщить о проблеме", callback_data="report_bug")],
-            [InlineKeyboardButton(text="👤 Консультация", url="https://t.me/bartXIII")],
-            [InlineKeyboardButton(text="🎓 Тренинги", url="https://t.me/naivedream")],
-            [InlineKeyboardButton(text="◀️ В начало", callback_data="back_to_start")]
+            [InlineKeyboardButton(
+                text="🤖 Сообщить о проблеме", callback_data="report_bug")],
+            [InlineKeyboardButton(
+                text="👤 Консультация с автором", url="https://t.me/bartXIII")],
+            [InlineKeyboardButton(
+                text="🎓 Тренинги", url="https://t.me/naivedream")],
+            [InlineKeyboardButton(text="◀️ В начало",
+                                  callback_data="back_to_start")]
         ]))
 
-    elif data == "report_bug":
-        await callback.message.edit_text("Опиши, пожалуйста, проблему в следующем сообщении. Мы постараемся помочь.", reply_markup=get_back_keyboard())
+    elif callback.data == "report_bug":
+        await callback.message.edit_text(
+            "Пожалуйста, опиши проблему в следующем сообщении. Мы обязательно поможем!",
+            reply_markup=get_back_keyboard()
+        )
+        # Включаем режим ожидания сообщения для поддержки
+        # (в реальном проекте — сохранить состояние через FSM)
 
-    elif data == "back_to_start":
+    elif callback.data == "back_to_start":
         await cmd_start(callback.message)
 
     await callback.answer()
 
+# Обработка данных из Mini App
 
-# -------------------------
-# WebApp data handler
-# -------------------------
+
 @router.message()
 async def handle_webapp_data(message: Message):
-    """
-    Handles messages and web_app_data from the Mini App.
-    The Mini App should send JSON strings via Telegram.WebApp.sendData({ ... }).
-    """
-    # handle data from WebApp
-    webapp = getattr(message, "web_app_data", None)
-    if webapp and getattr(webapp, "data", None):
-        raw = webapp.data
-        logging.info(f"Received web_app_data from {message.from_user.id}: {raw}")
-        # raw is a stringified JSON from WebApp (client side)
-        # We'll do simple substring checks and also try to parse JSON
-        try:
-            import json
-            payload = json.loads(raw)
-        except Exception:
-            payload = {"_raw": raw}
+    if message.web_app_data:
+        data = message.web_app_data.data
+        user = message.from_user
+        # Логируем или обрабатываем событие
+        print(f"Mini App data from {user.id}: {data}")
 
-        # Examples of actions we expect:
-        # { action: "practice_completed", practice: "love-field" }
-        # { action: "transformation_step", step: 2, note: "..." }
-        # { action: "journal_save", text: "..." }
-        # { action: "agreement_created", ... }
-
-        action = payload.get("action") if isinstance(payload, dict) else None
-
-        if action == "practice_completed":
-            practice = payload.get("practice", "unknown")
-            await message.answer(f"🌿 Спасибо — практика «{practice}» помечена как завершённая. Ты молодец.")
-        elif action == "journal_save":
-            await message.answer("📝 Запись дневника принята. Спасибо за честность.")
-        elif action == "transformation_step":
-            await message.answer("🔁 Шаг практики сохранен. Продолжай в своём темпе.")
-        elif action == "agreement_created":
-            await message.answer("📜 Соглашение с собой сохранено. Удачи на пути.")
-        else:
-            await message.answer("✅ Данные получены. Спасибо!")
-
-    else:
-        # Plain text message—interpret as support message if user says so
-        text = (message.text or "").lower()
-        if "помощ" in text or "проблем" in text or "support" in text:
-            # In a real app, forward to support chat or save to DB
-            await message.answer("Спасибо, мы получили вашу просьбу о поддержке. Оператор ответит в ближайшее время.")
-        else:
-            # Default reply with quick button to WebApp
+        # Пример: если пользователь завершил практику
+        if '"action":"practice_completed"' in data:
             await message.answer(
-                "Чтобы вернуться в Мастерскую, нажмите кнопку:",
+                "🌿 Спасибо, что прошёл(ла) практику! Ты делаешь важный шаг к себе.\n\n"
+                "Если захочешь продолжить — просто нажми на кнопку ниже.",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="🏡 В Мастерскую", web_app=WebAppInfo(url=MINI_APP_URL))]
+                    [InlineKeyboardButton(
+                        text="🔄 Вернуться в Мастерскую", web_app=WebAppInfo(url=MINI_APP_URL))]
                 ])
             )
+        else:
+            await message.answer("Данные получены. Спасибо!")
+    else:
+        # Обычное текстовое сообщение (например, в поддержку)
+        # Здесь можно пересылать в чат поддержки
+        if "сообщить о проблеме" in str(message.text).lower():
+            pass  # можно реализовать FSM
+        else:
+            await message.answer("Я понял. Чтобы вернуться в Мастерскую, нажми кнопку ниже:",
+                                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                     [InlineKeyboardButton(
+                                         text="🏡 В Мастерскую", web_app=WebAppInfo(url=MINI_APP_URL))]
+                                 ]))
 
-
-# -------------------------
-# Start
-# -------------------------
+# Регистрация роутеров
 dp.include_router(router)
+
+# Запуск
 
 
 async def main():
     await set_webapp_menu(bot)
-    logging.info("Bot polling started.")
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
