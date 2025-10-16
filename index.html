@@ -1,897 +1,611 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Найти себя — Мастерская</title>
-<script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+<title>Мастерская — Найти себя</title>
 
-<!-- Интер -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  /* =========================
-     Theme tokens & reset
-     ========================= */
   :root{
-    --bg-1: #f7f9fb;
-    --bg-2: #ffffff;
+    --bg: #f6f9ff;
+    --card: #fff;
     --muted: #6b7280;
-    --accent-1: #5b6df6;
-    --accent-2: #8b5cf6;
-    --glass: rgba(255,255,255,0.6);
-    --card-radius: 14px;
-    --soft-shadow: 0 6px 24px rgba(17,24,39,0.06);
-    --glass-shadow: 0 10px 30px rgba(99,102,241,0.08);
-    --success: #16a34a;
-    --danger: #ef4444;
-    --surface: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    --accent-1:#5b6df6;
+    --accent-2:#8b5cf6;
+    --surface: linear-gradient(180deg,#fff,#fbfdff);
+    --radius:14px;
+    --shadow: 0 10px 30px rgba(2,6,23,0.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0b1220; --card:#071029; --muted:#9aa4b2;
+      --accent-1:#6ea0ff; --accent-2:#b792ff;
+    }
+    body { color: #e6eef8; }
   }
 
-  /* Reset */
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg,#eef2ff 0%, #f7fbff 100%);
-    color:#0f172a;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    line-height:1.5;
-    padding:24px;
-  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; background:var(--bg); color:#071028; }
+  .wrap{ max-width:1120px; margin:20px auto; padding:18px; display:grid; grid-template-columns: 1fr 340px; gap:20px; align-items:start; }
+  @media (max-width:980px){ .wrap{ grid-template-columns:1fr; padding:12px } .sidebar{ position: static; } }
 
-  /* Container layout */
-  .app {
-    max-width:1100px;
-    margin:0 auto;
-    display:grid;
-    grid-template-columns: 1fr 360px;
-    gap:20px;
-    align-items:start;
-  }
+  .card{ background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); border:1px solid rgba(2,6,23,0.04); }
+  .hero{ display:flex; gap:14px; align-items:center; }
+  .logo{ width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2)); color:white; display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px }
+  h1{ font-size:20px; margin:0 }
+  p.muted{ color:var(--muted); margin:6px 0 0; font-size:14px }
 
-  @media (max-width: 980px){
-    .app{ grid-template-columns: 1fr; padding: 16px; }
-  }
+  .controls{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap }
+  .btn{ border:none; cursor:pointer; padding:10px 14px; border-radius:12px; font-weight:600; font-size:14px }
+  .btn-primary{ background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:white; box-shadow: 0 8px 30px rgba(91,109,246,0.12) }
+  .btn-ghost{ background:transparent; border:1px solid rgba(2,6,23,0.06); color:var(--muted) }
+  .btn-outline{ background:transparent; border:1px solid rgba(91,109,246,0.12); color:var(--accent-1) }
 
-  /* Left column (main screens) */
-  .main {
-    min-height: 80vh;
-  }
+  .sidebar .card{ position:sticky; top:20px; }
 
-  /* Right column (sidebar) */
-  .sidebar {
-    position:sticky;
-    top:24px;
-    align-self:start;
-  }
+  /* Grid blocks */
+  .grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px }
+  .small{ padding:12px; border-radius:10px; background:linear-gradient(180deg,#fff,#fbfdff); border:1px solid rgba(2,6,23,0.03) }
 
-  /* Card */
-  .card{
-    background:var(--surface);
-    border-radius:var(--card-radius);
-    padding:20px;
-    box-shadow:var(--soft-shadow);
-    border: 1px solid rgba(15, 23, 42, 0.03);
-    transition: transform .18s ease, box-shadow .18s ease;
-  }
-  .card:hover{ transform: translateY(-4px); box-shadow: 0 14px 40px rgba(2,6,23,0.08); }
+  /* Tests UI */
+  .progress{ height:10px; background:#eef2ff; border-radius:999px; overflow:hidden; margin:12px 0 }
+  .progress > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); transition:width .4s cubic-bezier(.2,.9,.2,1); }
 
-  /* Header / hero */
-  .hero{
-    display:flex;
-    gap:18px;
-    align-items:center;
-  }
-  .logo {
-    width:68px;
-    height:68px;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background: linear-gradient(135deg,var(--accent-1),var(--accent-2));
-    color:white;
-    font-weight:700;
-    font-size:22px;
-    box-shadow: var(--glass-shadow);
-    flex-shrink:0;
-  }
-  .hero h1{
-    font-size:clamp(18px, 2.6vw, 26px);
-    margin:0;
-    letter-spacing:-0.02em;
-  }
-  .hero p{ margin:4px 0 0; color:var(--muted); font-size:14px; }
+  .question{ background:linear-gradient(180deg,#fff,#fcfeff); border-left:4px solid rgba(91,109,246,0.12); padding:14px; border-radius:10px; }
+  .scores{ margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center }
+  .score{ width:48px;height:48px;border-radius:10px;border:1px solid rgba(2,6,23,0.04); display:grid;place-items:center;font-weight:700;background:#fff; cursor:pointer; transition:all .12s }
+  .score:hover{ transform:translateY(-6px); box-shadow:0 12px 30px rgba(91,109,246,0.06) }
+  .score.active{ background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:white; border:none }
 
-  /* Controls */
-  .controls { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 14px;
-    border-radius:12px;
-    border:none;
-    cursor:pointer;
-    font-weight:600;
-    font-size:14px;
-    transition: transform .12s ease, box-shadow .12s ease;
-  }
-  .btn:active{ transform: translateY(1px) }
-  .btn-primary{
-    color:#fff;
-    background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    box-shadow: 0 8px 30px rgba(91,109,246,0.12);
-  }
-  .btn-ghost{
-    background:transparent;
-    border:1px solid rgba(15,23,42,0.06);
-    color:var(--muted);
-  }
-  .btn-outline{
-    background:transparent;
-    border:1px solid rgba(91,109,246,0.14);
-    color:var(--accent-1);
-    font-weight:600;
-  }
+  /* Steps */
+  .steps{ display:flex; gap:8px; justify-content:center; margin:10px 0 }
+  .dot{ width:10px;height:10px;border-radius:999px;background:#e6eefc }
+  .dot.active{ background:linear-gradient(90deg,var(--accent-1),var(--accent-2)) }
 
-  /* Screens system */
-  .screen { display:none; animation:screenIn .28s ease both; }
-  .screen.active{ display:block; }
-  @keyframes screenIn { from {opacity:0; transform: translateY(8px)} to {opacity:1; transform:none} }
+  textarea{ width:100%; min-height:110px; padding:12px; border-radius:10px; border:1px solid rgba(2,6,23,0.04); font-family:inherit; font-size:15px }
 
-  /* Progress bar */
-  .progress {
-    height:10px;
-    background:linear-gradient(90deg,#eef2ff,#fcfbff);
-    border-radius:999px;
-    overflow:hidden;
-    margin:14px 0 18px;
-    border:1px solid rgba(15,23,42,0.03);
-  }
-  .progress > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); transition:width .45s cubic-bezier(.2,.9,.2,1) }
+  .muted-block{ color:var(--muted); font-size:13px }
 
-  /* Question card */
-  .question {
-    background: linear-gradient(180deg, #ffffff, #fbfdff);
-    padding:18px;
-    border-radius:12px;
-    border-left:4px solid rgba(91,109,246,0.14);
-  }
-  .question p{margin:0 0 8px; font-weight:600}
-
-  /* Score buttons */
-  .score-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:16px; }
-  .score {
-    width:48px;height:48px;border-radius:10px;border:1px solid rgba(15,23,42,0.04); background:white;
-    display:inline-grid;place-items:center; font-weight:700; cursor:pointer; box-shadow: 0 6px 14px rgba(2,6,23,0.04);
-    transition: transform .12s ease, box-shadow .12s ease, border-color .12s;
-  }
-  .score:hover{ transform: translateY(-4px); border-color: rgba(91,109,246,0.12); box-shadow: 0 10px 30px rgba(91,109,246,0.06); }
-  .score.active { background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:white; border:none; box-shadow: 0 12px 36px rgba(91,109,246,0.12); }
-
-  /* Step indicator */
-  .steps { display:flex; gap:8px; justify-content:center; margin:14px 0; }
-  .dot { width:10px;height:10px;border-radius:999px;background:#e6eefc; }
-  .dot.active{ background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); box-shadow: 0 6px 18px rgba(91,109,246,0.12) }
-
-  /* Practice and journal */
-  .practice-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-top:18px; }
-  .card-small{ padding:14px; border-radius:12px; background: linear-gradient(180deg,#fff,#fcfeff); border:1px solid rgba(15,23,42,0.03); }
-
-  textarea.journal {
-    width:100%; min-height:120px; resize:vertical; padding:14px; border-radius:10px; border:1px solid rgba(15,23,42,0.05);
-    font-family:inherit; font-size:15px; line-height:1.5; background:transparent;
-  }
-  textarea.journal:focus{ outline: none; box-shadow: 0 8px 30px rgba(91,109,246,0.06); border-color: rgba(91,109,246,0.18) }
-
-  /* Result badges */
-  .badge { padding:10px 12px; border-radius:10px; display:inline-flex; gap:10px; align-items:center; font-weight:700; }
-  .badge.good{ color:var(--success); background: rgba(22,163,74,0.06); }
-  .badge.warn{ color:#b45309; background: rgba(190,148,0,0.06); }
-  .badge.danger{ color:var(--danger); background: rgba(239,68,68,0.06); }
-
-  /* Sidebar */
-  .sidebar .card{ position:relative; overflow:visible; }
-  .side-stats { display:flex; gap:12px; flex-direction:column; }
-  .stat { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:10px; background:#fff; border:1px solid rgba(15,23,42,0.03); }
-  .stat strong{ font-size:18px }
-  .stat span{ color:var(--muted) }
-
-  /* Footer small */
-  .muted { color:var(--muted); font-size:13px; margin-top:12px; }
-
-  /* Accessibility: focus */
-  :focus{ outline: 3px solid rgba(91,109,246,0.12); outline-offset:2px; border-radius:8px; }
-
+  footer{ margin-top:20px; text-align:center; font-size:13px; color:var(--muted) }
 </style>
 </head>
 <body>
-
-<div class="app" id="app">
-  <main class="main">
-
-    <!-- Loading / Onboarding (kept IDs for JS compatibility) -->
-    <section id="loading-screen" class="screen active card" aria-live="polite">
-      <div class="hero">
+  <div class="wrap">
+    <main>
+      <!-- HERO -->
+      <section class="card hero" aria-labelledby="hero-title">
         <div class="logo">НC</div>
         <div>
-          <h1>Загружаем твоё пространство</h1>
-          <p>Нейтрально. Без оценок. Просто начнём вместе.</p>
+          <h1 id="hero-title">Мастерская — «Найти себя»</h1>
+          <p class="muted">Короткие тесты, практики и дневник. Всё в одном месте.</p>
+
+          <div class="controls" style="margin-top:12px">
+            <button class="btn btn-primary" id="btn-start">▶️ Начать путь</button>
+            <button class="btn btn-outline" id="btn-features">🔍 Что внутри</button>
+            <button class="btn btn-ghost" id="btn-book">📖 О книге</button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="controls" style="margin-top:18px;">
-        <button class="btn btn-primary" onclick="showScreen('onboarding-screen')">Продолжить</button>
-        <button class="btn btn-ghost" onclick="showScreen('support-screen')">Помощь</button>
-      </div>
-    </section>
+      <!-- FEATURES -->
+      <section class="card" id="features" style="margin-top:16px; display:none">
+        <h2>Что внутри</h2>
+        <p class="muted-block">Диагностика, тесты, практики и дневник. Всё про заботу, а не про давление.</p>
 
-    <section id="onboarding-screen" class="screen card" aria-hidden="true">
-      <div class="hero">
-        <div class="logo">НC</div>
-        <div>
-          <h1>Привет — добро пожаловать в Мастерскую</h1>
-          <p>Короткие практики, честная диагностика и мягкие напоминания, которые действительно помогают.</p>
+        <div class="grid-2" style="margin-top:12px">
+          <div class="small"><strong>Диагностика «6 уровней»</strong><div class="muted-block">12 вопросов ~5 минут</div></div>
+          <div class="small"><strong>Тест на выгорание</strong><div class="muted-block">22 вопроса (Maslach)</div></div>
+          <div class="small"><strong>Практики</strong><div class="muted-block">Поле любви, Преображение, Соглашение</div></div>
+          <div class="small"><strong>Дневник</strong><div class="muted-block">Локальное сохранение и отправка в бота</div></div>
         </div>
-      </div>
+      </section>
 
-      <div class="controls" aria-hidden="false">
-        <button class="btn btn-primary" onclick="showScreen('diagnostics-menu')">▶️ Начать путь</button>
-        <button class="btn btn-outline" onclick="showScreen('features-screen')">Что внутри</button>
-        <button class="btn btn-ghost" onclick="showScreen('book-screen')">О книге</button>
-      </div>
-
-      <div style="margin-top:18px" class="muted">Подсказка: всё работает оффлайн — ваши ответы остаются в сессии WebApp</div>
-    </section>
-
-    <section id="features-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('onboarding-screen')">← Назад</button>
-      <h2>Что умеет Мастерская</h2>
-      <p class="muted">Коротко: диагностика, практики, дневник и мягкая поддержка.</p>
-
-      <div class="practice-row" style="margin-top:12px">
-        <div class="card-small">
-          <strong>Диагностика «6 уровней»</strong>
-          <div class="muted">Экспресс-оценка 12 вопросов</div>
+      <!-- DIAGNOSTICS MENU -->
+      <section class="card" id="diagnostics-menu" style="margin-top:16px">
+        <h2>Начать диагностику</h2>
+        <p class="muted-block">Выбери тест — он поможет понять, где сейчас ресурсы, а где напряжение.</p>
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn btn-primary" id="start-6levels">🧭 «Мои 6 уровней»</button>
+          <button class="btn btn-outline" id="start-burnout">🔥 Тест на выгорание (Maslach)</button>
+          <button class="btn btn-ghost" id="to-practices">🌿 К практикам</button>
         </div>
-        <div class="card-small">
-          <strong>Тест на выгорание</strong>
-          <div class="muted">Адаптированный опросник Маслача</div>
+      </section>
+
+      <!-- SIX LEVELS -->
+      <section class="card" id="six-levels" style="margin-top:16px; display:none">
+        <button class="btn btn-ghost" id="six-back">◀️ Назад</button>
+        <h2>Диагностика «Мои 6 уровней»</h2>
+        <div id="six-content" style="margin-top:12px"></div>
+      </section>
+
+      <!-- BURNOUT -->
+      <section class="card" id="burnout" style="margin-top:16px; display:none">
+        <button class="btn btn-ghost" id="burnout-back">◀️ Назад</button>
+        <h2>Тест на выгорание (Maslach)</h2>
+        <div id="burnout-content" style="margin-top:12px"></div>
+      </section>
+
+      <!-- RESULTS -->
+      <section class="card" id="results" style="margin-top:16px; display:none">
+        <h2>Результаты</h2>
+        <div id="results-content" style="margin-top:12px"></div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="result-to-practice">Начать рекомендованную практику</button>
         </div>
-        <div class="card-small">
-          <strong>Практики</strong>
-          <div class="muted">«Поле любви», «Преображение», «Соглашение с собой»</div>
+      </section>
+
+      <!-- PRACTICES -->
+      <section class="card" id="practices" style="margin-top:16px; display:none">
+        <button class="btn btn-ghost" id="practices-back">◀️ Назад</button>
+        <h2>Практики</h2>
+        <p class="muted-block">Выбери практику и следуй шагам в своём темпе.</p>
+
+        <div class="grid-2" style="margin-top:12px">
+          <div class="small">
+            <strong>🌿 Поле любви</strong>
+            <div class="muted-block" style="margin-top:8px">Мягкая 10–15 минутная медитация</div>
+            <div style="margin-top:10px"><button class="btn btn-primary" id="open-love">Открыть</button></div>
+          </div>
+
+          <div class="small">
+            <strong>🔁 Преображение</strong>
+            <div class="muted-block" style="margin-top:8px">Пошаговая работа с эмоцией</div>
+            <div style="margin-top:10px"><button class="btn btn-outline" id="open-trans">Открыть</button></div>
+          </div>
+
+          <div class="small">
+            <strong>✍️ Соглашение с собой</strong>
+            <div class="muted-block" style="margin-top:8px">Документ на 3 месяца</div>
+            <div style="margin-top:10px"><button class="btn btn-outline" id="open-agreement">Открыть</button></div>
+          </div>
+
+          <div class="small">
+            <strong>📝 Дневник</strong>
+            <div class="muted-block" style="margin-top:8px">Сохранение локально + отправка в бота</div>
+            <div style="margin-top:10px"><button class="btn btn-ghost" id="open-journal">Открыть</button></div>
+          </div>
         </div>
-        <div class="card-small">
-          <strong>Дневник</strong>
-          <div class="muted">Встроенные подсказки и шаблон Google Docs</div>
+      </section>
+
+      <!-- PRACTICE: LOVE -->
+      <section class="card" id="practice-love" style="margin-top:16px; display:none">
+        <button class="btn btn-ghost" id="love-back">◀️ Назад</button>
+        <h2>Практика — Поле любви</h2>
+        <p class="muted-block">Найди 10–15 минут в тишине. Есть аудиоверсия и текстовая.</p>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="play-love">🎧 Воспроизвести аудио</button>
+          <button class="btn btn-outline" id="show-love-text">📄 Показать текст</button>
         </div>
-      </div>
 
-      <div class="controls" style="margin-top:16px">
-        <button class="btn btn-primary" onclick="showScreen('diagnostics-menu')">Начать диагностику</button>
-        <button class="btn btn-outline" onclick="showScreen('practices-menu')">К практикам</button>
-      </div>
-    </section>
-
-    <section id="book-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('onboarding-screen')">← Назад</button>
-      <h2>О книге «Найти себя»</h2>
-      <p class="muted">Живая карта внутреннего перехода — практики и понятные модели для восстановления энергии и смысла.</p>
-
-      <div style="display:flex; gap:12px; margin-top:14px; flex-wrap:wrap;">
-        <div class="card-small"><strong>6 уровней</strong><div class="muted">Модель проверки</div></div>
-        <div class="card-small"><strong>20+ практик</strong><div class="muted">Практики разной глубины</div></div>
-        <div class="card-small"><strong>Ресурсность</strong><div class="muted">Прагматичный фокус на восстановлении</div></div>
-      </div>
-
-      <div class="controls" style="margin-top:16px">
-        <button class="btn btn-outline" onclick="window.open('https://ozon.ru/t/h1FI95m', '_blank')">🛒 Купить</button>
-        <button class="btn btn-primary" onclick="showScreen('diagnostics-menu')">Начать диагностику</button>
-      </div>
-    </section>
-
-    <section id="support-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('onboarding-screen')">← Назад</button>
-      <h2>Поддержка</h2>
-      <p class="muted">Техническая помощь или консультации автора.</p>
-
-      <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px">
-        <button class="btn btn-outline" onclick="reportBug()">Сообщить о проблеме</button>
-        <button class="btn btn-outline" onclick="window.open('https://t.me/artyom_grafov','_blank')">Консультация с автором</button>
-        <button class="btn btn-outline" onclick="window.open('https://t.me/kanal_masterskaya','_blank')">Тренинги</button>
-      </div>
-    </section>
-
-    <!-- Diagnostics menu -->
-    <section id="diagnostics-menu" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('onboarding-screen')">← Назад</button>
-      <h2>Начать путь</h2>
-      <p class="muted">Понимание — это первое действие. Выбери тест.</p>
-
-      <div class="practice-row" style="margin-top:16px">
-        <div class="card-small">
-          <strong>Экспресс: «Мои 6 уровней»</strong>
-          <div class="muted" style="margin-top:8px">~5 минут, 12 вопросов</div>
-          <div style="margin-top:12px"><button class="btn btn-primary" onclick="startSixLevelsTest()">Начать</button></div>
-        </div>
-        <div class="card-small">
-          <strong>Тест на выгорание (MBI)</strong>
-          <div class="muted" style="margin-top:8px">22 вопроса</div>
-          <div style="margin-top:12px"><button class="btn btn-outline" onclick="startBurnoutTest()">Начать</button></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Six levels test -->
-    <section id="six-levels-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('diagnostics-menu')">← Назад</button>
-      <h2>Диагностика «Мои 6 уровней»</h2>
-      <p class="muted">Ответь честно — нет правильных ответов.</p>
-
-      <div id="six-levels-content" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Burnout -->
-    <section id="burnout-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('diagnostics-menu')">← Назад</button>
-      <h2>Тест на выгорание</h2>
-      <p class="muted">Адаптация опросника Маслача для быстрого самопроверки.</p>
-
-      <div id="burnout-content" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Results -->
-    <section id="six-levels-result" class="screen card" aria-hidden="true">
-      <h2>Твоя карта на сегодня</h2>
-      <div id="six-levels-result-content" style="margin-top:12px"></div>
-      <div style="margin-top:14px" class="controls">
-        <button class="btn btn-primary" onclick="startPractice('love-field')">Начать «Поле любви»</button>
-        <button class="btn btn-outline" onclick="showScreen('practices-menu')">К практикам</button>
-      </div>
-    </section>
-
-    <section id="burnout-result" class="screen card" aria-hidden="true">
-      <h2>Результаты теста</h2>
-      <div id="burnout-result-content" style="margin-top:12px"></div>
-      <div style="margin-top:14px" class="controls">
-        <button class="btn btn-primary" onclick="startPractice('love-field')">Начать «Поле любви»</button>
-        <button class="btn btn-outline" onclick="showScreen('practices-menu')">К практикам</button>
-      </div>
-    </section>
-
-    <!-- Practices menu -->
-    <section id="practices-menu" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('onboarding-screen')">← Назад</button>
-      <h2>Меню практик</h2>
-      <p class="muted">Выбери практику, которую хочется попробовать прямо сейчас.</p>
-
-      <div class="practice-row" style="margin-top:14px">
-        <div class="card-small">
-          <strong>🌿 Поле любви</strong>
-          <div class="muted">Мягкая 10–15 мин медитация</div>
-          <div style="margin-top:10px"><button class="btn btn-primary" onclick="startPractice('love-field')">Открыть</button></div>
-        </div>
-        <div class="card-small">
-          <strong>🔁 Преображение</strong>
-          <div class="muted">Глубокая трансформационная практика</div>
-          <div style="margin-top:10px"><button class="btn btn-outline" onclick="startPractice('transfiguration')">Открыть</button></div>
-        </div>
-        <div class="card-small">
-          <strong>✍️ Соглашение с собой</strong>
-          <div class="muted">Форма на 3 месяца</div>
-          <div style="margin-top:10px"><button class="btn btn-outline" onclick="startPractice('agreement')">Открыть</button></div>
-        </div>
-        <div class="card-small">
-          <strong>📝 Дневник</strong>
-          <div class="muted">Подсказки и шаблон</div>
-          <div style="margin-top:10px"><button class="btn btn-outline" onclick="showScreen('journal-screen')">Открыть</button></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Practice: Love field -->
-    <section id="practice-love-field" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('practices-menu')">← Назад</button>
-      <h2>Практика «Поле любви»</h2>
-      <p class="muted">Выдели 10–15 минут, удобно сядь и следуй за голосом.</p>
-
-      <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="playAudio()">Аудиоверсия (12 мин)</button>
-        <button class="btn btn-outline" onclick="showTextVersion()">Текстовая версия</button>
-      </div>
-
-      <div id="audio-player" style="margin-top:16px; display:none">
-        <div class="card-small">
-          <h4>Аудиомедитация</h4>
-          <audio controls style="width:100%; margin-top:12px;">
+        <div id="love-audio" style="margin-top:12px; display:none">
+          <audio controls id="audio-player" style="width:100%">
+            <!-- Вставь сюда реальный путь к аудио, если есть -->
             <source src="audio/love-field.mp3" type="audio/mpeg">
             Ваш браузер не поддерживает аудио.
           </audio>
-        </div>
-      </div>
-
-      <div id="text-version" style="margin-top:16px; display:none">
-        <div class="card-small">
-          <h4>Текст медитации</h4>
-          <p class="muted">Сядьте удобно... (полный текст из главы)</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Practice: Transfiguration -->
-    <section id="practice-transfiguration" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('practices-menu')">← Назад</button>
-      <h2>Практика «Преображение»</h2>
-      <div style="margin-top:12px" class="practice-step card-small">
-        <p class="muted"><strong>Важно:</strong> если вы в острой кризисной ситуации, обратитесь к специалисту.</p>
-        <p class="muted">Глубокая последовательность шагов для работы с эмоциями.</p>
-      </div>
-
-      <div id="transfiguration-content" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Practice: Agreement -->
-    <section id="practice-agreement" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('practices-menu')">← Назад</button>
-      <h2>Соглашение с собой</h2>
-      <p class="muted">Создай личное соглашение на 3 месяца.</p>
-
-      <div id="agreement-content" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Journal -->
-    <section id="journal-screen" class="screen card" aria-hidden="true">
-      <button class="btn btn-ghost" onclick="showScreen('practices-menu')">← Назад</button>
-      <h2>Дневник</h2>
-      <p class="muted">Короткие вопросы, которые помогают смотреть вглубь.</p>
-
-      <a class="btn btn-outline" style="margin-top:12px; display:inline-block" href="https://docs.google.com/document/d/1DxySrZSM9PSr9MPfajAT_DEXr1CzKj7evcElytXr4Lg/edit" target="_blank">Шаблон Google Docs</a>
-
-      <div style="margin-top:12px">
-        <button class="btn btn-primary" onclick="giveJournalQuestion()">Дай вопрос</button>
-        <div id="journal-question" style="margin-top:12px; display:none" class="card-small"></div>
-      </div>
-
-      <div style="margin-top:12px">
-        <textarea class="journal" id="journal-entry" placeholder="Записать свои мысли..."></textarea>
-        <div style="margin-top:8px" class="controls">
-          <button class="btn btn-primary" onclick="saveJournal()">Сохранить</button>
-          <button class="btn btn-ghost" onclick="setupReminders()">Настроить напоминания</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <strong>Текущее состояние</strong>
-          <div class="muted" style="margin-top:6px">Быстрый доступ к результатам</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-weight:700; color:var(--accent-1)">Добро пожаловать</div>
-          <div class="muted" style="font-size:13px">Вы в безопасности</div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px" class="side-stats">
-        <div class="stat"><strong id="stat-last-test">—</strong><span>последний тест</span></div>
-        <div class="stat"><strong id="stat-practice">—</strong><span>последняя практика</span></div>
-        <div class="stat"><strong id="stat-journal">—</strong><span>последняя запись</span></div>
-      </div>
-
-      <div style="margin-top:12px">
-        <div class="muted">Быстрые ссылки</div>
-        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
-          <button class="btn btn-outline" onclick="showScreen('diagnostics-menu')">Диагностика</button>
-          <button class="btn btn-outline" onclick="showScreen('practices-menu')">Практики</button>
-        </div>
-      </div>
-
-      <div class="muted" style="margin-top:12px">© Мастерская — бережный подход к восстановлению</div>
-    </div>
-  </aside>
-</div>
-
-<script>
-  // === Telegram WebApp init ===
-  const tg = window.Telegram?.WebApp || { initDataUnsafe: {} };
-  try{ if(window.Telegram && Telegram.WebApp){ Telegram.WebApp.ready(); Telegram.WebApp.expand(); } }catch(e){/* ignore */ }
-
-  // === App state (kept structure from оригинального файла) ===
-  let appData = {
-    sixLevelsAnswers: [],
-    burnoutAnswers: [],
-    agreementData: {},
-    currentTransfigurationStep: 0
-  };
-
-  // Вопросы (те же массивы — оставил без изменений для совместимости)
-  const sixLevelsQuestions = [
-    "Как вы оцениваете своё физическое самочувствие? (энергия, сон, телесное ощущение)",
-    "Насколько вы чувствуете связь со своими базовыми потребностями? (еда, отдых, движение)",
-    "Насколько вы уверены в себе как в личности? (самооценка, границы)",
-    "Чувствуете ли вы контакт с собой? (понимание своих желаний, эмоций)",
-    "Насколько вы удовлетворены своими отношениями? (близость, поддержка)",
-    "Есть ли в ваших отношениях ощущение безопасности и доверия?",
-    "Насколько вы чувствуете смысл в своей профессиональной деятельности?",
-    "Есть ли у вас ощущение компетентности в работе?",
-    "Насколько вы живёте в соответствии со своими ценностями?",
-    "Чувствуете ли вы внутреннюю целостность между словом и делом?",
-    "Насколько вы ощущаете связь с чем-то большим, чем вы сами? (духовность, природа, искусство)",
-    "Есть ли в вашей жизни ощущение потока и вдохновения?"
-  ];
-
-  const burnoutQuestions = [
-    "Я чувствую себя эмоционально опустошенным(ой) на работе.",
-    "К концу рабочего дня я чувствую себя как «выжатый лимон».",
-    "Я стал(а) более циничным(ой) или безразличным(ой) к другим.",
-    "Мне кажется, что мои усилия не приносят значимых результатов.",
-    "Я с трудом концентрируюсь на задачах.",
-    "Я чувствую снижение профессиональной эффективности.",
-    "Меня раздражают мелкие неудачи и помехи.",
-    "Я чувствую себя уставшим(ей) уже с утра.",
-    "Мне сложно находить мотивацию для новых начинаний.",
-    "Я чувствую, что двигаюсь по замкнутому кругу.",
-    "Я стал(а) менее терпимым(ой) к коллегам или клиентам.",
-    "Я чувствую, что мои достижения не замечают.",
-    "Я чувствую, что эмоционально 'сгораю'.",
-    "Мне всё труднее справляться со стрессом на работе.",
-    "Я стал(а) более холодным(ой) в общении.",
-    "Я чувствую, что работа 'высасывает' из меня всё.",
-    "Я чувствую, что не справляюсь с объёмом работы.",
-    "Мне кажется, что я не достигаю своих профессиональных целей.",
-    "Я чувствую, что мои усилия напрасны.",
-    "Я чувствую эмоциональное истощение.",
-    "Я чувствую, что мои профессиональные навыки ухудшаются.",
-    "Я стал(а) более циничным(ой) по отношению к своей работе."
-  ];
-
-  const journalQuestions = [
-    "Что прямо сейчас может дать мне хоть каплю тепла?",
-    "Какая часть меня просит внимания сегодня?",
-    "Что я могу простить себе в этот момент?",
-    "Где я чувствую напряжение в теле? Что оно хочет сказать?",
-    "Какое качество я хочу проявить сегодня?"
-  ];
-
-  // ===== Navigation util =====
-  function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s => {
-      s.classList.remove('active');
-      s.setAttribute('aria-hidden','true');
-    });
-    const el = document.getElementById(id);
-    if(el){
-      el.classList.add('active');
-      el.setAttribute('aria-hidden','false');
-      window.scrollTo({top:0,behavior:'smooth'});
-    }
-    // minor UI sync
-    if(id === 'six-levels-result') document.getElementById('stat-last-test').textContent = '6 уровней';
-  }
-
-  // Initial transition from loading
-  setTimeout(()=> showScreen('onboarding-screen'), 900);
-
-  // ===== Six levels test =====
-  function startSixLevelsTest(){
-    appData.sixLevelsAnswers = [];
-    showScreen('six-levels-screen');
-    showSixLevelsQuestion(0);
-  }
-
-  function showSixLevelsQuestion(index){
-    const container = document.getElementById('six-levels-content');
-    const total = sixLevelsQuestions.length;
-    if(index >= total){
-      calculateSixLevelsResult();
-      return;
-    }
-    const progressPercent = Math.round((index/total)*100);
-    container.innerHTML = `
-      <div class="progress" aria-hidden="true"><i style="width:${progressPercent}%"></i></div>
-      <div class="question">
-        <p>Вопрос ${index+1} из ${total}</p>
-        <div style="margin-top:8px">${escapeHtml(sixLevelsQuestions[index])}</div>
-      </div>
-      <div class="score-row" style="margin-top:16px">
-        ${Array.from({length:10}, (_,i)=> {
-          const v = i+1;
-          return `<button class="score" onclick="answerSixLevels(${index},${v})" aria-label="Оценка ${v}">${v}</button>`;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  function answerSixLevels(qIdx, score){
-    appData.sixLevelsAnswers[qIdx] = score;
-    showSixLevelsQuestion(qIdx+1);
-  }
-
-  function calculateSixLevelsResult(){
-    // guard: ensure array full
-    const answers = appData.sixLevelsAnswers.map(v => Number(v) || 0);
-    // groups of 2
-    const levels = {
-      physical: avg(answers[0],answers[1]),
-      personal: avg(answers[2],answers[3]),
-      interpersonal: avg(answers[4],answers[5]),
-      professional: avg(answers[6],answers[7]),
-      principled: avg(answers[8],answers[9]),
-      spiritual: avg(answers[10],answers[11])
-    };
-    // partition
-    const strengths = Object.entries(levels).filter(([k,v])=>v>=7);
-    const tensions = Object.entries(levels).filter(([k,v])=>v>=4 && v<7);
-    const critical = Object.entries(levels).filter(([k,v])=>v<4);
-    const names = {
-      physical:'Физический',
-      personal:'Личностный',
-      interpersonal:'Межличностный',
-      professional:'Профессиональный',
-      principled:'Принципиальный',
-      spiritual:'Духовный'
-    };
-
-    let html = `<div style="display:flex;flex-direction:column;gap:10px">`;
-    if(strengths.length){
-      html += `<div class="badge good">🟢 Сильные области: ${strengths.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div>`;
-    }
-    if(tensions.length){
-      html += `<div class="badge warn">🟡 Напряжение: ${tensions.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div>`;
-    }
-    if(critical.length){
-      html += `<div class="badge danger">🔴 Критические точки: ${critical.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div>`;
-    }
-    html += `<div class="card-small" style="margin-top:8px"><strong>Рекомендации</strong><div class="muted" style="margin-top:6px">Перечитайте главы 10, 12, 19. Рекомендуемая практика: «Поле любви».</div></div>`;
-    html += `</div>`;
-
-    document.getElementById('six-levels-result-content').innerHTML = html;
-    showScreen('six-levels-result');
-    document.getElementById('stat-last-test').textContent = '6 уровней';
-  }
-
-  // ===== Burnout test =====
-  function startBurnoutTest(){
-    showScreen('burnout-screen');
-    // initialization handled by initBurnoutTest()
-  }
-  function initBurnoutTest(){
-    appData.burnoutAnswers = [];
-    showBurnoutQuestion(0);
-  }
-  function showBurnoutQuestion(index){
-    const container = document.getElementById('burnout-content');
-    const total = burnoutQuestions.length;
-    if(index >= total){
-      calculateBurnoutResult(); return;
-    }
-    const progressPercent = Math.round((index/total)*100);
-    container.innerHTML = `
-      <div class="progress" aria-hidden="true"><i style="width:${progressPercent}%"></i></div>
-      <div class="question"><p>${index+1} / ${total}</p><div style="margin-top:8px">${escapeHtml(burnoutQuestions[index])}</div></div>
-      <div style="display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:12px">
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},0)">Никогда</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},1)">Очень редко</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},2)">Редко</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},3)">Иногда</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},4)">Часто</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},5)">Очень часто</button>
-        <button class="btn btn-ghost" onclick="answerBurnout(${index},6)">Каждый день</button>
-      </div>
-    `;
-  }
-  function answerBurnout(idx,score){
-    appData.burnoutAnswers[idx]=score;
-    showBurnoutQuestion(idx+1);
-  }
-  function calculateBurnoutResult(){
-    const a = appData.burnoutAnswers.map(v=>Number(v)||0);
-    const EI_q=[0,1,2,5,7,12,13,15,19];
-    const DP_q=[4,9,10,14,21];
-    const RPD_q=[3,6,8,11,16,17,18,20];
-    const EI = EI_q.reduce((s,i)=>s+(a[i]||0),0);
-    const DP = DP_q.reduce((s,i)=>s+(a[i]||0),0);
-    const RPD = RPD_q.reduce((s,i)=>s+(a[i]||0),0);
-    const getLevel=(score,low,med)=> score>med?'Высокий':(score>=low?'Средний':'Низкий');
-    const eiL=getLevel(EI,17,26);
-    const dpL=getLevel(DP,6,9);
-    const rpdL=getLevel(RPD,32,39);
-    const html = `
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div class="badge ${eiL==='Высокий'?'danger':eiL==='Средний'?'warn':'good'}">🔥 Эмоциональное истощение: ${eiL}</div>
-        <div class="badge ${dpL==='Высокий'?'danger':dpL==='Средний'?'warn':'good'}">👤 Деперсонализация: ${dpL}</div>
-        <div class="badge ${rpdL==='Высокий'?'danger':rpdL==='Средний'?'warn':'good'}">📉 Чувство неэффективности: ${rpdL}</div>
-        <div class="card-small" style="margin-top:6px">
-          <strong>Рекомендации</strong>
-          <div class="muted" style="margin-top:6px">Сейчас важен мягкий уход за собой: отдых, границы, короткие практики. Обратитесь к главам 1 и 7.</div>
-        </div>
-      </div>
-    `;
-    document.getElementById('burnout-result-content').innerHTML = html;
-    showScreen('burnout-result');
-    document.getElementById('stat-last-test').textContent = 'Выгорание';
-  }
-
-  // ===== Practices =====
-  function startPractice(type){
-    if(type === 'love-field') showScreen('practice-love-field');
-    if(type === 'transfiguration') {
-      appData.currentTransfigurationStep = 0;
-      showTransfigurationStep();
-      showScreen('practice-transfiguration');
-    }
-    if(type === 'agreement'){
-      appData.agreementData={};
-      appData.currentAgreementStep=0;
-      showAgreementStep();
-      showScreen('practice-agreement');
-    }
-    document.getElementById('stat-practice').textContent = prettifyPracticeName(type);
-  }
-  function prettifyPracticeName(k){
-    return ({'love-field':'Поле любви','transfiguration':'Преображение','agreement':'Соглашение'}[k])||'—';
-  }
-
-  function playAudio(){
-    document.getElementById('audio-player').style.display='block';
-  }
-  function showTextVersion(){
-    document.getElementById('text-version').style.display='block';
-  }
-
-  // Transfiguration steps (kept original content)
-  const transfigurationSteps = [
-    "Сядь удобно, закрой глаза, сделай несколько глубоких вдохов. Войди в состояние Поля Любви. Когда будешь готов(а), напиши 'готов'.",
-    "Теперь сосредоточься на чувстве, с которым хочешь поработать. Что это? Обида, гнев, тревога? Назови его одним словом.",
-    "Хорошо. Теперь найди это чувство в своём теле. Где оно живёт? В груди, в животе, в горле? Опиши его.",
-    "Теперь мысленно обратись к этому образу. Скажи ему: 'Я тебя вижу'. Почувствуй это. А теперь спроси его: 'Для чего ты здесь? От чего ты меня защищаешь?'. Напиши ответ, который придет.",
-    "Поблагодари это чувство за службу и защиту. Предложи ему новую роль — быть источником силы. Что изменилось?",
-    "Медленно возвращайся. Когда откроешь глаза, напиши, как ты себя чувствуешь сейчас."
-  ];
-
-  function showTransfigurationStep(){
-    const idx = appData.currentTransfigurationStep;
-    const cont = document.getElementById('transfiguration-content');
-    if(idx < transfigurationSteps.length){
-      cont.innerHTML = `
-        <div class="steps" aria-hidden="true">
-          ${transfigurationSteps.map((_,i)=>`<div class="dot ${i===idx?'active':''}" ></div>`).join('')}
-        </div>
-        <div class="card-small">
-          <strong>Шаг ${idx+1} из ${transfigurationSteps.length}</strong>
-          <p class="muted" style="margin-top:8px">${escapeHtml(transfigurationSteps[idx])}</p>
-          <textarea id="transfiguration-answer" class="journal" placeholder="Ваш ответ..."></textarea>
-          <div style="margin-top:10px" class="controls">
-            <button class="btn btn-primary" onclick="nextTransfigurationStep()">Далее</button>
+          <div style="margin-top:10px">
+            <button class="btn btn-primary" id="complete-love">✅ Завершить практику</button>
           </div>
         </div>
-      `;
-    } else {
-      cont.innerHTML = `<div style="text-align:center"><h3>Практика завершена</h3><p class="muted">Благодарим за работу.</p><div style="margin-top:8px"><button class="btn btn-primary" onclick="completePractice('transfiguration')">Сохранить</button></div></div>`;
-    }
-  }
 
-  function nextTransfigurationStep(){
-    const v = document.getElementById('transfiguration-answer')?.value?.trim();
-    if(!v){ alert('Пожалуйста, напишите ответ, прежде чем продолжить.'); return; }
-    appData.currentTransfigurationStep++;
-    showTransfigurationStep();
-  }
-
-  // Agreement steps
-  const agreementSteps = [
-    "Какое одно главное качество ты хочешь развить в ближайшие 3 месяца?",
-    "Напиши 3 ключевых принципа, которые помогут тебе развить это качество.",
-    "Какие 1–2 регулярных действия ты будешь совершать?",
-    "От какой одной разрушающей привычки ты готов отказаться на это время?"
-  ];
-
-  function showAgreementStep(){
-    const idx = appData.currentAgreementStep || 0;
-    const cont = document.getElementById('agreement-content');
-    if(idx < agreementSteps.length){
-      cont.innerHTML = `
-        <div class="steps">${agreementSteps.map((_,i)=>`<div class="dot ${i===idx?'active':''}"></div>`).join('')}</div>
-        <div class="card-small">
-          <strong>Шаг ${idx+1}</strong>
-          <p class="muted" style="margin-top:8px">${escapeHtml(agreementSteps[idx])}</p>
-          <textarea id="agreement-answer" class="journal" placeholder="Ваш ответ..."></textarea>
-          <div style="margin-top:10px"><button class="btn btn-primary" onclick="nextAgreementStep()">Далее</button></div>
+        <div id="love-text" style="margin-top:12px;display:none">
+          <div class="small">
+            <p class="muted-block">Сядьте удобно, закройте глаза, вдохните глубоко... (укороченная версия)</p>
+            <div style="margin-top:10px">
+              <button class="btn btn-primary" id="complete-love-2">✅ Завершить практику</button>
+            </div>
+          </div>
         </div>
-      `;
-    } else {
-      generateAgreementDocument();
+      </section>
+
+      <!-- PRACTICE: TRANSFIGURATION -->
+      <section class="card" id="practice-trans" style="margin-top:16px;display:none">
+        <button class="btn btn-ghost" id="trans-back">◀️ Назад</button>
+        <h2>Практика — Преображение</h2>
+        <div id="trans-content" style="margin-top:12px"></div>
+      </section>
+
+      <!-- PRACTICE: AGREEMENT -->
+      <section class="card" id="practice-agreement" style="margin-top:16px;display:none">
+        <button class="btn btn-ghost" id="agreement-back">◀️ Назад</button>
+        <h2>Соглашение с собой</h2>
+        <div id="agreement-content" style="margin-top:12px"></div>
+      </section>
+
+      <!-- JOURNAL -->
+      <section class="card" id="journal" style="margin-top:16px;display:none">
+        <button class="btn btn-ghost" id="journal-back">◀️ Назад</button>
+        <h2>Дневник</h2>
+        <p class="muted-block">Запиши свои мысли — сохранится локально. Можно отправить в бота.</p>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="journal-prompt">Дать вопрос</button>
+          <div id="journal-q" style="margin-top:8px; display:none" class="small"></div>
+          <textarea id="journal-text" placeholder="Пиши сюда..."></textarea>
+          <div style="margin-top:8px">
+            <button class="btn btn-primary" id="save-journal">Сохранить локально</button>
+            <button class="btn btn-outline" id="send-journal">Отправить в бота</button>
+          </div>
+        </div>
+      </section>
+
+      <footer style="margin-top:18px">
+        <div class="muted-block">© Мастерская «Найти себя» — бережный подход к восстановлению</div>
+      </footer>
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="card">
+        <strong>Текущее</strong>
+        <div class="muted-block" style="margin-top:8px">Быстрый переход и состояние</div>
+
+        <div style="margin-top:12px; display:flex; gap:8px; flex-direction:column">
+          <button class="btn btn-outline" id="nav-diagnostics">Диагностика</button>
+          <button class="btn btn-outline" id="nav-practices">Практики</button>
+          <button class="btn btn-outline" id="nav-journal">Дневник</button>
+          <button class="btn btn-outline" id="nav-home">Главная</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="muted-block">Последнее</div>
+          <div style="margin-top:8px">
+            <div class="small"><strong id="stat-last-test">—</strong><div class="muted-block">последний тест</div></div>
+            <div class="small" style="margin-top:8px"><strong id="stat-last-practice">—</strong><div class="muted-block">последняя практика</div></div>
+            <div class="small" style="margin-top:8px"><strong id="stat-last-journal">—</strong><div class="muted-block">последняя запись</div></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+<script>
+/* ===========================
+   Client-side app logic
+   =========================== */
+const tg = window.Telegram?.WebApp || null;
+if (tg && tg.ready) { try{ tg.ready(); tg.expand(); }catch(e){} }
+
+// Simple SPA show/hide
+function show(id){
+  document.querySelectorAll('main section.card').forEach(el=>el.style.display='none');
+  const el = document.getElementById(id);
+  if(el) el.style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Initial
+show('diagnostics-menu');
+
+// Buttons
+document.getElementById('btn-start').onclick = () => show('diagnostics-menu');
+document.getElementById('btn-features').onclick = () => { document.getElementById('features').style.display='block'; show('features'); };
+document.getElementById('btn-book').onclick = () => alert('Книга: «Найти себя» — практическая карта восстановления.');
+
+document.getElementById('nav-diagnostics').onclick = ()=> show('diagnostics-menu');
+document.getElementById('nav-practices').onclick = ()=> { show('practices'); };
+document.getElementById('nav-journal').onclick = ()=> show('journal');
+document.getElementById('nav-home').onclick = ()=> show('diagnostics-menu');
+
+// ---------- Six Levels test ----------
+const sixQuestions = [
+ "Как вы оцениваете своё физическое самочувствие? (энергия, сон, телесное ощущение)",
+ "Насколько вы чувствуете связь со своими базовыми потребностями? (еда, отдых, движение)",
+ "Насколько вы уверены в себе как в личности? (самооценка, границы)",
+ "Чувствуете ли вы контакт с собой? (понимание своих желаний, эмоций)",
+ "Насколько вы удовлетворены своими отношениями? (близость, поддержка)",
+ "Есть ли в ваших отношениях ощущение безопасности и доверия?",
+ "Насколько вы чувствуете смысл в своей профессиональной деятельности?",
+ "Есть ли у вас ощущение компетентности в работе?",
+ "Насколько вы живёте в соответствии со своими ценностями?",
+ "Чувствуете ли вы внутреннюю целостность между словом и делом?",
+ "Насколько вы ощущаете связь с чем-то большим, чем вы сами? (духовность, природа, искусство)",
+ "Есть ли в вашей жизни ощущение потока и вдохновения?"
+];
+
+let sixAnswers = [];
+function renderSix(index=0){
+  const el = document.getElementById('six-content');
+  if(index >= sixQuestions.length){
+    calcSix();
+    return;
+  }
+  const progress = Math.round((index / sixQuestions.length) * 100);
+  el.innerHTML = `
+    <div class="progress"><i style="width:${progress}%"></i></div>
+    <div class="question"><strong>Вопрос ${index+1}/${sixQuestions.length}</strong><div style="margin-top:8px">${escapeHtml(sixQuestions[index])}</div></div>
+    <div class="scores">${Array.from({length:10}, (_,i)=>i+1).map(n=>`<button class="score" data-val="${n}">${n}</button>`).join('')}</div>
+  `;
+  el.querySelectorAll('.score').forEach(btn=>{
+    btn.onclick = ()=> {
+      sixAnswers[index] = Number(btn.dataset.val);
+      renderSix(index+1);
     }
-  }
+  });
+}
 
-  function startAgreementSteps(){ appData.agreementData={}; appData.currentAgreementStep=0; showAgreementStep(); }
-  function nextAgreementStep(){
-    const v = document.getElementById('agreement-answer')?.value?.trim();
-    if(!v){ alert('Пожалуйста, запишите ответ.'); return; }
-    appData.agreementData[`step${appData.currentAgreementStep+1}`]=v;
-    appData.currentAgreementStep++;
-    showAgreementStep();
-  }
+document.getElementById('start-6levels').onclick = ()=> { sixAnswers = []; show('six-levels'); renderSix(0); };
+document.getElementById('six-back').onclick = ()=> { show('diagnostics-menu'); };
 
-  function generateAgreementDocument(){
-    const cont = document.getElementById('agreement-content');
+// Calculate result
+function calcSix(){
+  const safe = sixAnswers.map(v=>Number(v)||0);
+  const avg = (a,b)=>((safe[a]||0)+(safe[b]||0))/2;
+  const levels = {
+    physical: avg(0,1),
+    personal: avg(2,3),
+    interpersonal: avg(4,5),
+    professional: avg(6,7),
+    principled: avg(8,9),
+    spiritual: avg(10,11)
+  };
+  const names = { physical:'Физический', personal:'Личностный', interpersonal:'Межличностный', professional:'Профессиональный', principled:'Принципиальный', spiritual:'Духовный' };
+  const strengths = Object.entries(levels).filter(([k,v])=>v>=7);
+  const tensions = Object.entries(levels).filter(([k,v])=>v>=4 && v<7);
+  const critical = Object.entries(levels).filter(([k,v])=>v<4);
+
+  let html = '';
+  if(strengths.length) html += `<div class="small"><strong>🟢 Сильные области:</strong><div class="muted-block">${strengths.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div></div>`;
+  if(tensions.length) html += `<div class="small" style="margin-top:8px"><strong>🟡 Напряжение:</strong><div class="muted-block">${tensions.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div></div>`;
+  if(critical.length) html += `<div class="small" style="margin-top:8px"><strong>🔴 Критические точки:</strong><div class="muted-block">${critical.map(([k,v])=>`${names[k]} (${Math.round(v)}/10)`).join(', ')}</div></div>`;
+
+  html += `<div style="margin-top:12px" class="small"><strong>Рекомендации</strong><div class="muted-block">Перечитайте главы 10,12,19. Рекомендуемая практика: «Поле любви».</div></div>`;
+  document.getElementById('results-content').innerHTML = html;
+  document.getElementById('stat-last-test').textContent = '6 уровней';
+  show('results');
+
+  // send to Telegram (optional)
+  sendToTelegram({action:'test_completed', test:'six_levels', result: levels});
+}
+
+// ---------- Burnout (Maslach) ----------
+const burnoutQuestions = [
+ "Я чувствую себя эмоционально опустошенным(ой) на работе.",
+ "К концу рабочего дня я чувствую себя как «выжатый лимон».",
+ "Я стал(а) более циничным(ой) или безразличным(ой) к другим.",
+ "Мне кажется, что мои усилия не приносят значимых результатов.",
+ "Я с трудом концентрируюсь на задачах.",
+ "Я чувствую снижение профессиональной эффективности.",
+ "Меня раздражают мелкие неудачи и помехи.",
+ "Я чувствую себя уставшим(ей) уже с утра.",
+ "Мне сложно находить мотивацию для новых начинаний.",
+ "Я чувствую, что двигаюсь по замкнутому кругу.",
+ "Я стал(а) менее терпимым(ой) к коллегам или клиентам.",
+ "Я чувствую, что мои достижения не замечают.",
+ "Я чувствую, что эмоционально 'сгораю'.",
+ "Мне всё труднее справляться со стрессом на работе.",
+ "Я стал(а) более холодным(ой) в общении.",
+ "Я чувствую, что работа 'высасывает' из меня всё.",
+ "Я чувствую, что не справляюсь с объёмом работы.",
+ "Мне кажется, что я не достигаю своих профессиональных целей.",
+ "Я чувствую, что мои усилия напрасны.",
+ "Я чувствую эмоциональное истощение.",
+ "Я чувствую, что мои профессиональные навыки ухудшаются.",
+ "Я стал(а) более циничным(ой) по отношению к своей работе."
+];
+
+let burnoutAnswers = [];
+function renderBurnout(index=0){
+  const el = document.getElementById('burnout-content');
+  if(index >= burnoutQuestions.length){ calcBurnout(); return; }
+  const progress = Math.round((index / burnoutQuestions.length) * 100);
+  el.innerHTML = `
+    <div class="progress"><i style="width:${progress}%"></i></div>
+    <div class="question"><strong>${index+1} / ${burnoutQuestions.length}</strong><div style="margin-top:8px">${escapeHtml(burnoutQuestions[index])}</div></div>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:12px">
+      <button class="btn btn-ghost" data-val="0">Никогда</button>
+      <button class="btn btn-ghost" data-val="1">Очень редко</button>
+      <button class="btn btn-ghost" data-val="2">Редко</button>
+      <button class="btn btn-ghost" data-val="3">Иногда</button>
+      <button class="btn btn-ghost" data-val="4">Часто</button>
+      <button class="btn btn-ghost" data-val="5">Очень часто</button>
+      <button class="btn btn-ghost" data-val="6">Каждый день</button>
+    </div>
+  `;
+  el.querySelectorAll('button[data-val]').forEach(b=>{
+    b.onclick = ()=>{ burnoutAnswers[index]=Number(b.dataset.val); renderBurnout(index+1); }
+  });
+}
+
+document.getElementById('start-burnout').onclick = ()=> { burnoutAnswers=[]; show('burnout'); renderBurnout(0); };
+document.getElementById('burnout-back').onclick = ()=> show('diagnostics-menu');
+
+function calcBurnout(){
+  const a = burnoutAnswers.map(v=>Number(v)||0);
+  const EI_q=[0,1,2,5,7,12,13,15,19];
+  const DP_q=[4,9,10,14,21];
+  const RPD_q=[3,6,8,11,16,17,18,20];
+  const sum = (arr)=>arr.reduce((s,i)=>s+(a[i]||0),0);
+  const EI = sum(EI_q), DP = sum(DP_q), RPD = sum(RPD_q);
+  const getLevel=(score,low,med)=> score>med ? 'Высокий' : (score>=low ? 'Средний' : 'Низкий');
+  const eiL = getLevel(EI,17,26), dpL = getLevel(DP,6,9), rpdL = getLevel(RPD,32,39);
+  const html = `
+    <div class="small"><strong>🔥 Эмоциональное истощение:</strong> <span class="muted-block">${eiL}</span></div>
+    <div class="small" style="margin-top:8px"><strong>👤 Деперсонализация:</strong> <span class="muted-block">${dpL}</span></div>
+    <div class="small" style="margin-top:8px"><strong>📉 Чувство неэффективности:</strong> <span class="muted-block">${rpdL}</span></div>
+    <div class="small" style="margin-top:12px"><strong>Рекомендации:</strong><div class="muted-block">Снизьте требования к себе, отдыхайте. Рекомендуем — «Поле любви».</div></div>
+  `;
+  document.getElementById('results-content').innerHTML = html;
+  document.getElementById('stat-last-test').textContent = 'Выгорание';
+  show('results');
+
+  sendToTelegram({action:'test_completed', test:'burnout', result:{EI,DP,RPD}});
+}
+
+// ---------- Practices logic ----------
+document.getElementById('to-practices').onclick = ()=> show('practices');
+document.getElementById('practices-back').onclick = ()=> show('diagnostics-menu');
+
+// Love practice
+document.getElementById('open-love').onclick = ()=> show('practice-love');
+document.getElementById('love-back').onclick = ()=> show('practices');
+document.getElementById('play-love').onclick = ()=> {
+  document.getElementById('love-audio').style.display='block';
+  sendToTelegram({action:'practice_started', practice:'love-field'});
+};
+document.getElementById('show-love-text').onclick = ()=> document.getElementById('love-text').style.display='block';
+document.getElementById('complete-love').onclick = ()=> completePractice('love-field');
+document.getElementById('complete-love-2').onclick = ()=> completePractice('love-field');
+
+function completePractice(name){
+  document.getElementById('stat-last-practice').textContent = name;
+  alert('Практика отмечена как завершённая. Отличная работа.');
+  sendToTelegram({action:'practice_completed', practice:name});
+  show('practices');
+}
+
+// Transfiguration (steps)
+const transSteps = [
+  "Сядь удобно, закрой глаза, сделай несколько глубоких вдохов. Войди в состояние Поля Любви.",
+  "Сосредоточься на чувстве, с которым хочешь поработать. Назови его одним словом.",
+  "Найди это чувство в теле. Где оно живёт? Опиши.",
+  "Обратись к этому образу: 'Я тебя вижу'. Спроси: 'Для чего ты здесь?'. Запиши ответ.",
+  "Поблагодари чувство и предложи ему новую роль — быть источником силы.",
+  "Медленно возвращайся. Запиши, как ты себя чувствуешь."
+];
+let transIdx = 0;
+
+document.getElementById('open-trans').onclick = ()=> { transIdx=0; renderTrans(); show('practice-trans'); }
+document.getElementById('trans-back').onclick = ()=> show('practices');
+
+function renderTrans(){
+  const el = document.getElementById('trans-content');
+  if(transIdx >= transSteps.length){
+    el.innerHTML = `<div class="small"><strong>Практика завершена</strong><div class="muted-block">Спасибо за вашу работу.</div><div style="margin-top:8px"><button class="btn btn-primary" id="save-trans">Сохранить и вернуться</button></div></div>`;
+    document.getElementById('save-trans').onclick = ()=> { sendToTelegram({action:'practice_completed', practice:'transfiguration'}); document.getElementById('stat-last-practice').textContent='transfiguration'; show('practices'); };
+    return;
+  }
+  el.innerHTML = `
+    <div class="steps">${transSteps.map((_,i)=>`<div class="dot ${i===transIdx?'active':''}"></div>`).join('')}</div>
+    <div class="small"><strong>Шаг ${transIdx+1} из ${transSteps.length}</strong><div class="muted-block" style="margin-top:8px">${escapeHtml(transSteps[transIdx])}</div>
+      <textarea id="trans-answer" placeholder="Напишите ваш отклик..."></textarea>
+      <div style="margin-top:8px"><button class="btn btn-primary" id="trans-next">Далее</button></div>
+    </div>
+  `;
+  document.getElementById('trans-next').onclick = ()=>{
+    const text = document.getElementById('trans-answer').value.trim();
+    if(!text){ alert('Запишите ваш ответ, чтобы продолжить.'); return; }
+    // persist to local storage
+    const saved = JSON.parse(localStorage.getItem('trans_notes')||'[]');
+    saved.push({step:transIdx+1, text, ts:Date.now()});
+    localStorage.setItem('trans_notes', JSON.stringify(saved));
+    sendToTelegram({action:'transformation_step', step:transIdx+1, note:text});
+    transIdx++; renderTrans();
+  };
+}
+
+// Agreement
+let agreementState = {};
+document.getElementById('open-agreement').onclick = ()=> { agreementState={}; agreementStep=0; showAgreement(); show('practice-agreement'); }
+document.getElementById('agreement-back').onclick = ()=> show('practices');
+
+const agreementQuestions = [
+  "Какое одно главное качество ты хочешь развить в ближайшие 3 месяца?",
+  "Напиши 3 ключевых принципа, которые помогут развить это качество.",
+  "Какие 1–2 регулярных действия ты будешь совершать?",
+  "От какой одной разрушающей привычки ты готов отказаться на это время?"
+];
+let agreementStep = 0;
+function showAgreement(){
+  const el = document.getElementById('agreement-content');
+  if(agreementStep >= agreementQuestions.length){
+    // render agreement doc
     const today = new Date();
     const end = new Date(); end.setMonth(end.getMonth()+3);
-    const fmt = d => d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-    const name = (tg.initDataUnsafe?.user?.first_name) ? escapeHtml(tg.initDataUnsafe.user.first_name) : 'Пользователь';
-    cont.innerHTML = `
-      <div class="card-small">
-        <h3 style="margin:0 0 8px">Моё соглашение с собой</h3>
-        <div class="muted">Срок: ${fmt(today)} — ${fmt(end)}</div>
-        <div style="margin-top:10px">
-          <strong>Качество:</strong><div class="muted">${escapeHtml(appData.agreementData.step1||'—')}</div>
-          <strong style="margin-top:6px; display:block">Принципы:</strong><div class="muted">${escapeHtml(appData.agreementData.step2||'—')}</div>
-          <strong style="margin-top:6px; display:block">Практики:</strong><div class="muted">${escapeHtml(appData.agreementData.step3||'—')}</div>
-          <strong style="margin-top:6px; display:block">Отказываюсь:</strong><div class="muted">${escapeHtml(appData.agreementData.step4||'—')}</div>
-        </div>
-        <div style="margin-top:12px" class="muted">Я, ${name}, заключаю это соглашение с собой.</div>
-        <div style="margin-top:10px"><button class="btn btn-primary" onclick="completePractice('agreement')">Готово</button></div>
+    const fmt = d=>d.toLocaleDateString();
+    const html = `
+      <div class="small"><strong>Моё соглашение (${fmt(today)} — ${fmt(end)})</strong>
+        <div class="muted-block" style="margin-top:8px"><strong>Качество:</strong> ${escapeHtml(agreementState.step1||'—')}</div>
+        <div class="muted-block" style="margin-top:6px"><strong>Принципы:</strong> ${escapeHtml(agreementState.step2||'—')}</div>
+        <div class="muted-block" style="margin-top:6px"><strong>Практики:</strong> ${escapeHtml(agreementState.step3||'—')}</div>
+        <div class="muted-block" style="margin-top:6px"><strong>Отказываюсь:</strong> ${escapeHtml(agreementState.step4||'—')}</div>
+        <div style="margin-top:8px"><button class="btn btn-primary" id="save-agreement">Сохранить и отправить</button></div>
       </div>
     `;
+    el.innerHTML = html;
+    document.getElementById('save-agreement').onclick = ()=>{
+      localStorage.setItem('agreement', JSON.stringify(agreementState));
+      sendToTelegram({action:'agreement_created', agreement:agreementState});
+      document.getElementById('stat-last-practice').textContent = 'agreement';
+      alert('Соглашение сохранено.');
+      show('practices');
+    };
+    return;
   }
+  el.innerHTML = `
+    <div class="small"><strong>Шаг ${agreementStep+1}</strong><div class="muted-block" style="margin-top:8px">${escapeHtml(agreementQuestions[agreementStep])}</div>
+      <textarea id="agreement-answer" placeholder="Ваш ответ..."></textarea>
+      <div style="margin-top:8px"><button class="btn btn-primary" id="agreement-next">Далее</button></div>
+    </div>
+  `;
+  document.getElementById('agreement-next').onclick = ()=>{
+    const v = document.getElementById('agreement-answer').value.trim();
+    if(!v){ alert('Запишите ответ.'); return; }
+    agreementState[`step${agreementStep+1}`] = v;
+    agreementStep++;
+    showAgreement();
+  };
+}
 
-  function completePractice(pr){
-    try{ if(window.Telegram && Telegram.WebApp) Telegram.WebApp.sendData(JSON.stringify({action:'practice_completed',practice:pr,timestamp:Date.now()})); }catch(e){}
-    showScreen('practices-menu');
+// Journal
+const journalQs = [
+  "Что прямо сейчас может дать мне хоть каплю тепла?",
+  "Какая часть меня просит внимания сегодня?",
+  "Что я могу простить себе в этот момент?",
+  "Где я чувствую напряжение в теле? Что оно хочет сказать?",
+  "Какое качество я хочу проявить сегодня?"
+];
+document.getElementById('journal-prompt').onclick = ()=>{
+  const q = journalQs[Math.floor(Math.random()*journalQs.length)];
+  const el = document.getElementById('journal-q'); el.style.display='block'; el.innerHTML=`<strong>${escapeHtml(q)}</strong>`;
+};
+document.getElementById('open-journal').onclick = ()=> show('journal');
+document.getElementById('journal-back').onclick = ()=> show('practices');
+
+document.getElementById('save-journal').onclick = ()=>{
+  const t = document.getElementById('journal-text').value.trim();
+  if(!t){ alert('Напишите хотя бы пару строк.'); return; }
+  const saved = JSON.parse(localStorage.getItem('journal')||'[]');
+  saved.push({text:t, ts:Date.now()});
+  localStorage.setItem('journal', JSON.stringify(saved));
+  document.getElementById('stat-last-journal').textContent = new Date().toLocaleString();
+  alert('Запись сохранена локально.');
+  document.getElementById('journal-text').value='';
+};
+
+document.getElementById('send-journal').onclick = ()=>{
+  const t = document.getElementById('journal-text').value.trim();
+  if(!t){ alert('Напишите текст перед отправкой'); return; }
+  sendToTelegram({action:'journal_save', text:t});
+  document.getElementById('journal-text').value='';
+  document.getElementById('stat-last-journal').textContent = new Date().toLocaleString();
+  alert('Записано и отправлено в бота.');
+};
+
+// Result -> recommended practice
+document.getElementById('result-to-practice').onclick = ()=> {
+  // Simple heuristic: always recommend love-field
+  show('practice-love');
+  sendToTelegram({action:'navigate', to:'love-field', reason:'recommendation'});
+};
+
+// Utilities
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]); }
+
+function sendToTelegram(obj){
+  // Send structured data to Telegram backend via WebApp.sendData if available
+  try{
+    const payload = JSON.stringify(obj);
+    if(window.Telegram && Telegram.WebApp && Telegram.WebApp.sendData){
+      Telegram.WebApp.sendData(payload);
+    } else {
+      console.log("Telegram sendData not available. Payload:", payload);
+    }
+  } catch(e){
+    console.warn("Failed to send to Telegram", e);
   }
-
-  // ===== Journal helpers =====
-  function giveJournalQuestion(){
-    const q = journalQuestions[Math.floor(Math.random()*journalQuestions.length)];
-    const el = document.getElementById('journal-question');
-    el.innerHTML = `<strong>${escapeHtml(q)}</strong>`;
-    el.style.display='block';
-  }
-  function saveJournal(){
-    const text = document.getElementById('journal-entry')?.value?.trim();
-    if(!text){ alert('Нечего сохранять. Напишите несколько строк.'); return; }
-    document.getElementById('stat-journal').textContent = new Date().toLocaleString();
-    alert('Запись сохранена в текущей сессии.');
-    document.getElementById('journal-entry').value='';
-  }
-  function setupReminders(){ alert('Настройка напоминаний будет доступна в следующей версии.'); }
-
-  function reportBug(){
-    try{ if(window.Telegram && Telegram.WebApp) Telegram.WebApp.sendData(JSON.stringify({action:'report_bug'})); }catch(e){}
-    alert('Сообщение отправлено команде поддержки.');
-    showScreen('onboarding-screen');
-  }
-
-  // ===== Utilities =====
-  function avg(a,b){ return ((Number(a)||0)+(Number(b)||0))/2; }
-  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-
-  // Expose some functions globally (needed for inline onclick)
-  window.showScreen = showScreen;
-  window.startSixLevelsTest = startSixLevelsTest;
-  window.startBurnoutTest = startBurnoutTest;
-  window.initBurnoutTest = initBurnoutTest;
-  window.startPractice = startPractice;
-  window.playAudio = playAudio;
-  window.showTextVersion = showTextVersion;
-  window.giveJournalQuestion = giveJournalQuestion;
-  window.setupReminders = setupReminders;
-  window.reportBug = reportBug;
-  window.startAgreementSteps = startAgreementSteps;
-  window.startTransfigurationSteps = () => { appData.currentTransfigurationStep=0; showTransfigurationStep(); showScreen('practice-transfiguration'); };
-  window.saveJournal = saveJournal;
-
+}
 </script>
-
 </body>
 </html>
